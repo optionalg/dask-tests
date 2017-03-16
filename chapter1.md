@@ -1,121 +1,236 @@
 ---
-title       : Insert the chapter title here
-description : Insert the chapter description here
+title       : Dask examples for DC
+description : This is gonna be sooooo goooooooood.
 attachments :
   slides_link : https://s3.amazonaws.com/assets.datacamp.com/course/teach/slides_example.pdf
 
---- type:MultipleChoiceExercise lang:python xp:50 skills:1 key:1d33ac1a6a
-## A really bad movie
+---
+title: Dask Tests
+description: This is a template chapter.
 
-Have a look at the plot that showed up in the viewer to the right. Which type of movies have the worst rating assigned to them?
+--- type:NormalExercise lang:python xp:100 skills:2 key:3efae752e4
+## Dask delayed I
+
+This is a typical example using `dask.delayed`. It is drawn from material provided by Continuum in [this notebook](https://github.com/datacamp/courses-dask/blob/nbs/Notebooks/babynames.ipynb). It seems to work!
+
+More on dask delayed [here](http://dask.pydata.org/en/latest/delayed.html).
 
 *** =instructions
-- Long movies, clearly
-- Short movies, clearly
-- Long movies, but the correlation seems weak
-- Short movies, but the correlation seems weak
 
 *** =hint
-Have a look at the plot. Do you see a trend in the dots?
 
 *** =pre_exercise_code
 ```{python}
-# The pre exercise code runs code to initialize the user's workspace.
-# You can use it to load packages, initialize datasets and draw a plot in the viewer
 
-import pandas as pd
-import matplotlib.pyplot as plt
-
-movies = pd.read_csv("http://s3.amazonaws.com/assets.datacamp.com/course/introduction_to_r/movies.csv")
-
-plt.scatter(movies.runtime, movies.rating)
-plt.show()
-```
-
-*** =sct
-```{python}
-# SCT written with pythonwhat: https://github.com/datacamp/pythonwhat/wiki
-
-msg_bad = "That is not correct!"
-msg_success = "Exactly! The correlation is very weak though."
-test_mc(4, [msg_bad, msg_bad, msg_bad, msg_success])
-```
-
---- type:NormalExercise lang:python xp:100 skills:1 key:2127910ea0
-## Plot the movies yourself
-
-Do you remember the plot of the last exercise? Let's make an even cooler plot!
-
-A dataset of movies, `movies`, is available in the workspace.
-
-*** =instructions
-- The first function, `np.unique()`, uses the `unique()` function of the `numpy` package to get integer values for the movie genres. You don't have to change this code, just have a look!
-- Import `pyplot` in the `matplotlib` package. Set an alias for this import: `plt`.
-- Use `plt.scatter()` to plot `movies.runtime` onto the x-axis, `movies.rating` onto the y-axis and use `ints` for the color of the dots. You should use the first and second positional argument, and the `c` keyword.
-- Show the plot using `plt.show()`.
-
-*** =hint
-- You don't have to program anything for the first instruction, just take a look at the first line of code.
-- Use `import ___ as ___` to import `matplotlib.pyplot` as `plt`.
-- Use `plt.scatter(___, ___, c = ___)` for the third instruction.
-- You'll always have to type in `plt.show()` to show the plot you created.
-
-*** =pre_exercise_code
-```{python}
-import pandas as pd
-movies = pd.read_csv("http://s3.amazonaws.com/assets.datacamp.com/course/introduction_to_r/movies.csv")
-
-import numpy as np
 ```
 
 *** =sample_code
 ```{python}
-# Get integer values for genres
-_, ints = np.unique(movies.genre, return_inverse = True)
+# Imports
+import glob
+import zipfile
+import requests
+import io
+from dask import delayed
+import pandas as pd
 
-# Import matplotlib.pyplot
+# File
+url = 'https://137.200.4.16:443/oact/babynames/names.zip'
+r = requests.get(url, verify=False)
 
+z = zipfile.ZipFile(io.BytesIO(r.content))
+z.extractall(path='./babynames')
 
-# Make a scatter plot: runtime on  x-axis, rating on y-axis and set c to ints
-
-
-# Show the plot
+# Do some dask stuff
+dfs = []
+for year in glob.glob("babynames/yob*.txt"):
+    df = delayed(pd.read_csv)(year, header=None, names=['name','sex','count'])
+    year = year.split('yob')[1].replace('.txt','')
+    df = delayed(df.assign)(year = year)
+    dfs.append(df)
+    
+# Inspect the first file
+print(dfs[0].compute().head())
 
 ```
 
 *** =solution
 ```{python}
-# Get integer values for genres
-_, ints = np.unique(movies.genre, return_inverse = True)
 
-# Import matplotlib.pyplot
-import matplotlib.pyplot as plt
-
-# Make a scatter plot: runtime on  x-axis, rating on y-axis and set c to ints
-plt.scatter(movies.runtime, movies.rating, c=ints)
-
-# Show the plot
-plt.show()
 ```
 
 *** =sct
 ```{python}
-# SCT written with pythonwhat: https://github.com/datacamp/pythonwhat/wiki
 
-test_function("numpy.unique",
-              not_called_msg = "Don't remove the call of `np.unique` to define `ints`.",
-              incorrect_msg = "Don't change the call of `np.unique` to define `ints`.")
+```
 
-test_object("ints",
-            undefined_msg = "Don't remove the definition of the predefined `ints` object.",
-            incorrect_msg = "Don't change the definition of the predefined `ints` object.")
+--- type:NormalExercise lang:python xp:100 skills:2 key:e70c65db40
+## Dask delayed II
 
-test_import("matplotlib.pyplot", same_as = True)
+This follows up from the previous exercise to use dask delayed to do some computation: compute the
+number of babies named Khaleesi as a function of year.
 
-test_function("matplotlib.pyplot.scatter",
-              incorrect_msg = "You didn't use `plt.scatter()` correctly, have another look at the instructions.")
+The line `df = df.set_index('year')` (which is needed) times out on DataCamp. There's discussion about this with the experts
+in [an issue in our repo](https://github.com/datacamp/courses-dask/issues/6). Let's definitely discuss this!
 
-test_function("matplotlib.pyplot.show")
+*** =instructions
 
-success_msg("Great work!")
+*** =hint
+
+*** =pre_exercise_code
+```{python}
+import glob
+import zipfile
+import requests
+import io
+from dask import delayed
+import pandas as pd
+
+# File
+url = 'https://137.200.4.16:443/oact/babynames/names.zip'
+r = requests.get(url, verify=False)
+
+z = zipfile.ZipFile(io.BytesIO(r.content))
+z.extractall(path='./babynames')
+
+# Do some dask stuff
+dfs = []
+for year in glob.glob("babynames/yob201*.txt"):
+    df = delayed(pd.read_csv)(year, header=None, names=['name','sex','count'])
+    year = year.split('yob')[1].replace('.txt','')
+    df = delayed(df.assign)(year = year)
+    dfs.append(df)
+    
+# Inspect the first file
+#print(dfs[0].compute().head())
+```
+
+*** =sample_code
+```{python}
+# Import
+import dask.dataframe as dd
+
+# 
+df = dd.from_delayed(dfs, meta=dfs[0].compute())
+#df = df.set_index('year')
+df = df.persist() #this times out the DC exercise,  even on 5 years
+df = df.repartition(npartitions=4)
+
+#
+print(df.loc[df['name']=='Khaleesi', 'count'].compute()) #this times out, even on 5 years
+
+#Note: including the lines that time out here, the above code runs locally for me in < 3seconds
+
+```
+
+*** =solution
+```{python}
+
+```
+
+*** =sct
+```{python}
+
+```
+
+
+
+--- type:NormalExercise lang:python xp:100 skills:2 key:5e86ee67ac
+## Dask delayed visualization
+
+Dask delayed has a cool way of visualizing the chain of calculations. This doesn't work in DataCamp
+but, in the case in the code here, will look like this:
+
+it's the line `total.visualize()` that would be great to execute.
+
+[This example is from here](https://github.com/dask/dask-tutorial/blob/master/02_foundations.ipynb).
+
+*** =instructions
+
+*** =hint
+
+*** =pre_exercise_code
+```{python}
+
+```
+
+*** =sample_code
+```{python}
+from dask import delayed
+
+@delayed
+def inc(x):
+    return x + 1
+
+@delayed
+def add(x, y):
+    return x + y
+    
+x = inc(15)
+y = inc(30)
+total = add(x, y)
+
+#total.visualize() # doesn't work in DC
+total.compute()
+
+
+```
+
+*** =solution
+```{python}
+
+```
+
+*** =sct
+```{python}
+
+```
+
+
+--- type:NormalExercise lang:python xp:100 skills:2 key:e898ac4292
+## Dask distributed
+
+The 2nd big aspect of `dask` that we'll use in the course is dask distributed. Thisis an example exercise. There are several ways to do this. See more in the [issue mentioned in a previous exercise](https://github.com/datacamp/courses-dask/issues/6): Matt Rocklin states an option:
+
+> Don't have them create their own cluster with Client(), but rather have DC engineers stand up dask-scheduler and dask-worker processes for them (this is easy) and instead tell them to connect to "the cluster" at `Client('localhost:8786')`
+
+*** =instructions
+
+*** =hint
+
+*** =pre_exercise_code
+```{python}
+import glob
+import zipfile
+import requests
+import io
+
+# File
+url = 'https://137.200.4.16:443/oact/babynames/names.zip'
+r = requests.get(url, verify=False)
+
+z = zipfile.ZipFile(io.BytesIO(r.content))
+z.extractall(path='./babynames')
+```
+
+*** =sample_code
+```{python}
+from distributed import LocalCluster, Client
+import dask.dataframe as dd
+
+cluster = LocalCluster(nanny=False, n_workers=4, threads_per_worker=1)
+c = Client(cluster)
+df = dd.read_csv('babynames/yob18*.txt', header=None, names=['name','sex','count'])
+df = df.set_index('name')
+print(df.head())
+```
+
+*** =solution
+```{python}
+
+```
+
+*** =sct
+```{python}
+
 ```
