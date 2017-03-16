@@ -6,7 +6,7 @@ attachments :
 
 ---
 title: Dask Tests
-description: This is a template chapter.
+description: Dask exercising in DataCampLand.
 
 --- type:NormalExercise lang:python xp:100 skills:2 key:3efae752e4
 ## Dask delayed I
