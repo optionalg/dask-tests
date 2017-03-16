@@ -112,8 +112,8 @@ import dask.dataframe as dd
 
 # 
 df = dd.from_delayed(dfs, meta=dfs[0].compute())
-#df = df.set_index('year')
-df = df.persist() #this times out the DC exercise,  even on 5 years
+#df = df.set_index('year') #this times out the DC exercise,  even on 5 years
+#df = df.persist() #
 df = df.repartition(npartitions=4)
 
 #
@@ -140,6 +140,8 @@ print(df.loc[df['name']=='Khaleesi', 'count'].compute()) #this times out, even o
 
 Dask delayed has a cool way of visualizing the chain of calculations. This doesn't work in DataCamp
 but, in the case in the code here, will look like this:
+
+![Check it out!](https://s3.amazonaws.com/assets.datacamp.com/production/course_3541/datasets/Screenshot 2017-03-16 13.49.30.png)
 
 it's the line `total.visualize()` that would be great to execute.
 
