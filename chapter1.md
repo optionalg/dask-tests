@@ -1,3 +1,46 @@
+
+--- type:NormalExercise lang:python xp:100 skills:2 key:b0e3dac0a8
+## Altair test
+
+testing, testing altair...
+
+*** =instructions
+
+*** =hint
+
+*** =pre_exercise_code
+```{python}
+
+```
+
+*** =sample_code
+```{python}
+from altair import Chart, load_dataset
+
+data = load_dataset('cars', url_only=True)
+
+chart = Chart(data).mark_point().encode(
+             x='Horsepower:Q',
+             y='Miles_per_Gallon:Q',
+             color='Origin:N',
+         )
+
+html = chart.to_html()
+
+with open('chart.html', 'w') as f:
+     f.write(html)  
+
+```
+
+*** =solution
+```{python}
+
+```
+
+*** =sct
+```{python}
+
+```
 ---
 title       : Dask examples for DC
 description : This is gonna be sooooo goooooooood.
@@ -7,6 +50,9 @@ attachments :
 ---
 title: Dask Tests
 description: Dask exercising in DataCampLand.
+
+
+
 
 --- type:NormalExercise lang:python xp:100 skills:2 key:3efae752e4
 ## Dask delayed I
