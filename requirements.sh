@@ -1,5 +1,6 @@
 ##### Install specific package versions with pip #####
 
+pip3 install altair
 pip3 install pandas
 pip3 install graphviz
 pip3 install cloudpickle
