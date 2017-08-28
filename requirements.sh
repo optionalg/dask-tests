@@ -10,3 +10,4 @@ pip3 install matplotlib
 pip3 install toolz
 pip3 install pytables
 pip3 install bokeh
+pip3 install git+https://github.com/pymc-devs/pymc3
